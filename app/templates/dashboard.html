@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block content %}
+<h1 class="h3 mb-4">Dashboard</h1>
+
+
+<!-- Standings -->
+<h2 class="h5 mb-3">Team Standings</h2>
+<table class="table table-striped mb-4">
+  <thead>
+    <tr><th>Team</th><th>GP</th><th>W</th><th>L</th></tr>
+  </thead>
+  <tbody>
+    {% for team in standings %}
+    <tr>
+      <td>{{ team.name }}</td>
+      <td>{{ team.games_played }}</td>
+      <td>{{ team.wins }}</td>
+      <td>{{ team.losses }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="4" class="text-center text-muted">No teams yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<!-- Top 5 Scorers -->
+<h2 class="h5 mb-3">Top 5 Scorers</h2>
+<table class="table table-striped mb-4">
+  <thead>
+    <tr><th>Player</th><th>Team</th><th>Avg PTS</th><th>Total PTS</th></tr>
+  </thead>
+  <tbody>
+    {% for p in top_scorers %}
+    <tr>
+      <td>{{ p.name }}</td>
+      <td>{{ p.team_name }}</td>
+      <td>{{ p.avg_points }}</td>
+      <td>{{ p.total_points }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="4" class="text-center text-muted">No stats yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<!-- Top 5 Rebounders -->
+<h2 class="h5 mb-3">Top 5 Rebounders</h2>
+<table class="table table-striped mb-4">
+  <thead>
+    <tr><th>Player</th><th>Team</th><th>Avg REB</th></tr>
+  </thead>
+  <tbody>
+    {% for p in top_rebounders %}
+    <tr>
+      <td>{{ p.name }}</td>
+      <td>{{ p.team_name }}</td>
+      <td>{{ p.avg_rebounds }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="3" class="text-center text-muted">No stats yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<!-- Top 5 Assisters -->
+<h2 class="h5 mb-3">Top 5 Assisters</h2>
+<table class="table table-striped mb-4">
+  <thead>
+    <tr><th>Player</th><th>Team</th><th>Avg AST</th></tr>
+  </thead>
+  <tbody>
+    {% for p in top_assisters %}
+    <tr>
+      <td>{{ p.name }}</td>
+      <td>{{ p.team_name }}</td>
+      <td>{{ p.avg_assists }}</td>
+    </tr>
+    {% else %}
+    <tr><td colspan="3" class="text-center text-muted">No stats yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+{% endblock %}

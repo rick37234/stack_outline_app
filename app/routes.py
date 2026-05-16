@@ -376,3 +376,56 @@ def delete_stats(player_id, game_id):
     db.session.commit()
     flash("Stats deleted.", "success")
     return redirect(url_for("main.stats"))
+
+#dashboard
+
+@main.route("/dashboard")
+def dashboard():
+    total_teams   = db.session.query(func.count(Team.team_id)).scalar()
+    total_players = db.session.query(func.count(Player.player_id)).scalar()
+    total_games   = db.session.query(func.count(Game.game_id)).scalar()
+
+    standings = db.session.query(
+        Team.name,
+        Team.wins,
+        Team.losses,
+        (Team.wins + Team.losses).label("games_played")
+    ).order_by(Team.wins.desc()).all()
+
+    top_scorers = db.session.query(
+        Player.name,
+        Team.name.label("team_name"),
+        func.round(func.avg(PlayerStats.points), 1).label("avg_points"),
+        func.sum(PlayerStats.points).label("total_points")
+    ).join(PlayerStats, Player.player_id == PlayerStats.player_id)\
+     .join(Team, Player.team_id == Team.team_id)\
+     .group_by(Player.player_id)\
+     .order_by(func.avg(PlayerStats.points).desc())\
+     .limit(5).all()
+
+    top_rebounders = db.session.query(
+        Player.name,
+        Team.name.label("team_name"),
+        func.round(func.avg(PlayerStats.rebounds), 1).label("avg_rebounds")
+    ).join(PlayerStats, Player.player_id == PlayerStats.player_id)\
+     .join(Team, Player.team_id == Team.team_id)\
+     .group_by(Player.player_id)\
+     .order_by(func.avg(PlayerStats.rebounds).desc())\
+     .limit(5).all()
+
+    top_assisters = db.session.query(
+        Player.name,
+        Team.name.label("team_name"),
+        func.round(func.avg(PlayerStats.assists), 1).label("avg_assists")
+    ).join(PlayerStats, Player.player_id == PlayerStats.player_id)\
+     .join(Team, Player.team_id == Team.team_id)\
+     .group_by(Player.player_id)\
+     .order_by(func.avg(PlayerStats.assists).desc())\
+     .limit(5).all()
+
+    return render_template("dashboard.html",
+        standings=standings,
+        top_scorers=top_scorers,
+        top_rebounders=top_rebounders,
+        top_assisters=top_assisters
+    )
