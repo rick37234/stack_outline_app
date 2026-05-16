@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from .extensions import db
-from .models import Team, Player
+from datetime import datetime
+from .models import Team, Player, Game, PlayerStats
 
 main = Blueprint("main", __name__)
 
@@ -179,3 +180,98 @@ def delete_player(player_id):
     db.session.commit()
     flash("Player deleted.", "success")
     return redirect(url_for("main.players"))
+
+#games
+
+@main.route("/games")
+def games():
+    all_games = Game.query.order_by(Game.date.desc()).all()
+    return render_template("games/list.html", games=all_games)
+
+
+@main.route("/games/add", methods=["GET", "POST"])
+def add_game():
+    teams = Team.query.order_by(Team.name).all()
+
+    if request.method == "POST":
+        date         = request.form.get("date", "").strip()
+        home_team_id = request.form.get("home_team_id")
+        away_team_id = request.form.get("away_team_id")
+        home_score   = request.form.get("home_score")
+        away_score   = request.form.get("away_score")
+
+        if not date or not home_team_id or not away_team_id or home_score is None or away_score is None:
+            flash("All fields are required.", "danger")
+            return redirect(url_for("main.add_game"))
+
+        if home_team_id == away_team_id:
+            flash("Home and away teams must be different.", "danger")
+            return redirect(url_for("main.add_game"))
+
+        try:
+            home_score = int(home_score)
+            away_score = int(away_score)
+            if home_score < 0 or away_score < 0:
+                raise ValueError
+        except ValueError:
+            flash("Scores must be non-negative numbers.", "danger")
+            return redirect(url_for("main.add_game"))
+
+        try:
+            # ── TRANSACTION: record game and update team records atomically ──
+            game = Game(
+                date=datetime.strptime(date, "%Y-%m-%d").date(),
+                home_team_id=home_team_id,
+                away_team_id=away_team_id,
+                home_score=home_score,
+                away_score=away_score
+            )
+            db.session.add(game)
+
+            home_team = Team.query.get(home_team_id)
+            away_team = Team.query.get(away_team_id)
+
+            if home_score > away_score:
+                home_team.wins   += 1
+                away_team.losses += 1
+            elif away_score > home_score:
+                away_team.wins   += 1
+                home_team.losses += 1
+
+            db.session.commit()
+            flash("Game recorded and team records updated!", "success")
+            return redirect(url_for("main.games"))
+
+        except Exception as e:
+            db.session.rollback()
+            flash(f"Error recording game: {str(e)}", "danger")
+            return redirect(url_for("main.add_game"))
+
+    return render_template("games/add.html", teams=teams)
+
+
+@main.route("/games/delete/<int:game_id>", methods=["POST"])
+def delete_game(game_id):
+    game = Game.query.get_or_404(game_id)
+
+    try:
+        # ── TRANSACTION: reverse team records when deleting a game ──
+        home_team = Team.query.get(game.home_team_id)
+        away_team = Team.query.get(game.away_team_id)
+
+        if game.home_score > game.away_score:
+            home_team.wins   -= 1
+            away_team.losses -= 1
+        elif game.away_score > game.home_score:
+            away_team.wins   -= 1
+            home_team.losses -= 1
+
+        db.session.delete(game)
+        db.session.commit()
+        flash("Game deleted and team records updated.", "success")
+
+    except Exception as e:
+        db.session.rollback()
+        flash(f"Error deleting game: {str(e)}", "danger")
+
+    return redirect(url_for("main.games"))

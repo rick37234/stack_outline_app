@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}Add Game{% endblock %}
+{% block content %}
+<h1 class="h3 mb-4">Record Game</h1>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% for category, message in messages %}
+    <div class="alert alert-{{ category }}">{{ message }}</div>
+  {% endfor %}
+{% endwith %}
+
+<form method="POST">
+  <div class="mb-3">
+    <label class="form-label">Date</label>
+    <input type="date" name="date" class="form-control" required>
+  </div>
+  <div class="row">
+    <div class="col mb-3">
+      <label class="form-label">Home Team</label>
+      <select name="home_team_id" class="form-select" required>
+        <option value="">-- Select Team --</option>
+        {% for team in teams %}
+          <option value="{{ team.team_id }}">{{ team.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col mb-3">
+      <label class="form-label">Away Team</label>
+      <select name="away_team_id" class="form-select" required>
+        <option value="">-- Select Team --</option>
+        {% for team in teams %}
+          <option value="{{ team.team_id }}">{{ team.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+  <div class="row">
+    <div class="col mb-3">
+      <label class="form-label">Home Score</label>
+      <input type="number" name="home_score" class="form-control" min="0" required>
+    </div>
+    <div class="col mb-3">
+      <label class="form-label">Away Score</label>
+      <input type="number" name="away_score" class="form-control" min="0" required>
+    </div>
+  </div>
+  <button type="submit" class="btn btn-primary">Record Game</button>
+  <a href="{{ url_for('main.games') }}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}
