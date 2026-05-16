@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Edit Player{% endblock %}
+{% block content %}
+<h1 class="h3 mb-4">Edit Player</h1>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% for category, message in messages %}
+    <div class="alert alert-{{ category }}">{{ message }}</div>
+  {% endfor %}
+{% endwith %}
+
+<form method="POST">
+  <div class="mb-3">
+    <label class="form-label">Name</label>
+    <input type="text" name="name" class="form-control" value="{{ player.name }}" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Team</label>
+    <select name="team_id" class="form-select" required>
+      {% for team in teams %}
+        <option value="{{ team.team_id }}" {% if team.team_id == player.team_id %}selected{% endif %}>
+          {{ team.name }}
+        </option>
+      {% endfor %}
+    </select>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Position</label>
+    <input type="text" name="position" class="form-control" value="{{ player.position }}" placeholder="e.g. PG, SG" required>
+  </div>
+  <div class="row">
+    <div class="col mb-3">
+      <label class="form-label">Height (inches)</label>
+      <input type="number" name="height_in" class="form-control" value="{{ player.height_in }}" min="1" required>
+    </div>
+    <div class="col mb-3">
+      <label class="form-label">Weight (lbs)</label>
+      <input type="number" name="weight_lbs" class="form-control" value="{{ player.weight_lbs }}" min="1" required>
+    </div>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Salary ($)</label>
+    <input type="number" name="salary" class="form-control" value="{{ player.salary }}" min="0" required>
+  </div>
+  <button type="submit" class="btn btn-primary">Save Changes</button>
+  <a href="{{ url_for('main.players') }}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

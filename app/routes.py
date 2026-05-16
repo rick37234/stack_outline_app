@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from .extensions import db
-from .models import Team
+from .models import Team, Player
 
 main = Blueprint("main", __name__)
 
@@ -87,3 +87,95 @@ def delete_team(team_id):
     db.session.commit()
     flash("Team deleted.", "success")
     return redirect(url_for("main.teams"))
+
+#players
+
+@main.route("/players")
+def players():
+    all_players = Player.query.order_by(Player.name).all()
+    return render_template("players/list.html", players=all_players)
+
+
+@main.route("/players/add", methods=["GET", "POST"])
+def add_player():
+    teams = Team.query.order_by(Team.name).all()
+
+    if request.method == "POST":
+        name       = request.form.get("name", "").strip()
+        team_id    = request.form.get("team_id")
+        position   = request.form.get("position", "").strip()
+        height_in  = request.form.get("height_in")
+        weight_lbs = request.form.get("weight_lbs")
+        salary     = request.form.get("salary")
+
+        if not name or not team_id or not position or not height_in or not weight_lbs or not salary:
+            flash("All fields are required.", "danger")
+            return redirect(url_for("main.add_player"))
+
+        try:
+            height_in  = int(height_in)
+            weight_lbs = int(weight_lbs)
+            salary     = int(salary)
+            if height_in <= 0 or weight_lbs <= 0 or salary < 0:
+                raise ValueError
+        except ValueError:
+            flash("Height and weight must be positive. Salary must be non-negative.", "danger")
+            return redirect(url_for("main.add_player"))
+
+        player = Player(name=name, team_id=team_id, position=position,
+                        height_in=height_in, weight_lbs=weight_lbs, salary=salary)
+        db.session.add(player)
+        db.session.commit()
+        flash("Player added!", "success")
+        return redirect(url_for("main.players"))
+
+    return render_template("players/add.html", teams=teams)
+
+
+@main.route("/players/edit/<int:player_id>", methods=["GET", "POST"])
+def edit_player(player_id):
+    player = Player.query.get_or_404(player_id)
+    teams  = Team.query.order_by(Team.name).all()
+
+    if request.method == "POST":
+        name       = request.form.get("name", "").strip()
+        team_id    = request.form.get("team_id")
+        position   = request.form.get("position", "").strip()
+        height_in  = request.form.get("height_in")
+        weight_lbs = request.form.get("weight_lbs")
+        salary     = request.form.get("salary")
+
+        if not name or not team_id or not position or not height_in or not weight_lbs or not salary:
+            flash("All fields are required.", "danger")
+            return redirect(url_for("main.edit_player", player_id=player_id))
+
+        try:
+            height_in  = int(height_in)
+            weight_lbs = int(weight_lbs)
+            salary     = int(salary)
+            if height_in <= 0 or weight_lbs <= 0 or salary < 0:
+                raise ValueError
+        except ValueError:
+            flash("Height and weight must be positive. Salary must be non-negative.", "danger")
+            return redirect(url_for("main.edit_player", player_id=player_id))
+
+        player.name       = name
+        player.team_id    = team_id
+        player.position   = position
+        player.height_in  = height_in
+        player.weight_lbs = weight_lbs
+        player.salary     = salary
+        db.session.commit()
+        flash("Player updated!", "success")
+        return redirect(url_for("main.players"))
+
+    return render_template("players/edit.html", player=player, teams=teams)
+
+
+@main.route("/players/delete/<int:player_id>", methods=["POST"])
+def delete_player(player_id):
+    player = Player.query.get_or_404(player_id)
+    db.session.delete(player)
+    db.session.commit()
+    flash("Player deleted.", "success")
+    return redirect(url_for("main.players"))
