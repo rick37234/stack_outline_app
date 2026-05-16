@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% block title %}Add Stats{% endblock %}
+{% block content %}
+<h1 class="h3 mb-4">Add Player Stats</h1>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% for category, message in messages %}
+    <div class="alert alert-{{ category }}">{{ message }}</div>
+  {% endfor %}
+{% endwith %}
+
+<form method="POST">
+  <div class="row">
+    <div class="col mb-3">
+      <label class="form-label">Player</label>
+      <select name="player_id" class="form-select" required>
+        <option value="">-- Select Player --</option>
+        {% for player in players %}
+          <option value="{{ player.player_id }}">{{ player.name }} ({{ player.team.name }})</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col mb-3">
+      <label class="form-label">Game</label>
+      <select name="game_id" class="form-select" required>
+        <option value="">-- Select Game --</option>
+        {% for game in games %}
+          <option value="{{ game.game_id }}">{{ game.date }} — {{ game.home_team.name }} vs {{ game.away_team.name }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col mb-3">
+      <label class="form-label">Points</label>
+      <input type="number" name="points" class="form-control" value="0" min="0" required>
+    </div>
+    <div class="col mb-3">
+      <label class="form-label">Rebounds</label>
+      <input type="number" name="rebounds" class="form-control" value="0" min="0" required>
+    </div>
+    <div class="col mb-3">
+      <label class="form-label">Assists</label>
+      <input type="number" name="assists" class="form-control" value="0" min="0" required>
+    </div>
+    <div class="col mb-3">
+      <label class="form-label">Steals</label>
+      <input type="number" name="steals" class="form-control" value="0" min="0" required>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col mb-3">
+      <label class="form-label">Blocks</label>
+      <input type="number" name="blocks" class="form-control" value="0" min="0" required>
+    </div>
+    <div class="col mb-3">
+      <label class="form-label">Turnovers</label>
+      <input type="number" name="turnovers" class="form-control" value="0" min="0" required>
+    </div>
+    <div class="col mb-3">
+      <label class="form-label">Minutes Played</label>
+      <input type="number" name="minutes_played" class="form-control" value="0" min="0" required>
+    </div>
+  </div>
+
+  <div class="row">
+    <div class="col mb-3">
+      <label class="form-label">FG Attempted</label>
+      <input type="number" name="field_goals_attempted" class="form-control" value="0" min="0" required>
+    </div>
+    <div class="col mb-3">
+      <label class="form-label">FG Made</label>
+      <input type="number" name="field_goals_made" class="form-control" value="0" min="0" required>
+    </div>
+    <div class="col mb-3">
+      <label class="form-label">3P Attempted</label>
+      <input type="number" name="three_pointers_attempted" class="form-control" value="0" min="0" required>
+    </div>
+    <div class="col mb-3">
+      <label class="form-label">3P Made</label>
+      <input type="number" name="three_pointers_made" class="form-control" value="0" min="0" required>
+    </div>
+  </div>
+
+  <button type="submit" class="btn btn-primary">Add Stats</button>
+  <a href="{{ url_for('main.stats') }}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

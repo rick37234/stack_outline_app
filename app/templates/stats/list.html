@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% block title %}Player Stats{% endblock %}
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+  <h1 class="h3">Player Stats</h1>
+  <a href="{{ url_for('main.add_stats') }}" class="btn btn-primary">+ Add Stats</a>
+</div>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% for category, message in messages %}
+    <div class="alert alert-{{ category }}">{{ message }}</div>
+  {% endfor %}
+{% endwith %}
+
+<table class="table table-striped table-sm">
+  <thead>
+    <tr>
+      <th>Date</th>
+      <th>Player</th>
+      <th>Team</th>
+      <th>PTS</th>
+      <th>REB</th>
+      <th>AST</th>
+      <th>STL</th>
+      <th>BLK</th>
+      <th>TO</th>
+      <th>MIN</th>
+      <th>FGA</th>
+      <th>FGM</th>
+      <th>3PA</th>
+      <th>3PM</th>
+      <th></th>
+    </tr>
+  </thead>
+  <tbody>
+    {% for stat in stats %}
+    <tr>
+      <td>{{ stat.game.date }}</td>
+      <td>{{ stat.player.name }}</td>
+      <td>{{ stat.player.team.name }}</td>
+      <td>{{ stat.points }}</td>
+      <td>{{ stat.rebounds }}</td>
+      <td>{{ stat.assists }}</td>
+      <td>{{ stat.steals }}</td>
+      <td>{{ stat.blocks }}</td>
+      <td>{{ stat.turnovers }}</td>
+      <td>{{ stat.minutes_played }}</td>
+      <td>{{ stat.field_goals_attempted }}</td>
+      <td>{{ stat.field_goals_made }}</td>
+      <td>{{ stat.three_pointers_attempted }}</td>
+      <td>{{ stat.three_pointers_made }}</td>
+      <td>
+        <form action="{{ url_for('main.delete_stats', player_id=stat.player_id, game_id=stat.game_id) }}" method="POST" class="d-inline">
+          <button class="btn btn-sm btn-danger" onclick="return confirm('Delete these stats?')">Delete</button>
+        </form>
+      </td>
+    </tr>
+    {% else %}
+    <tr><td colspan="15" class="text-center text-muted">No stats yet.</td></tr>
+    {% endfor %}
+  </tbody>
+</table>
+{% endblock %}

@@ -1,6 +1,7 @@
 from flask import Blueprint, render_template, request, redirect, url_for, flash
 from .extensions import db
 from datetime import datetime
+from sqlalchemy import func
 from .models import Team, Player, Game, PlayerStats
 
 main = Blueprint("main", __name__)
@@ -275,3 +276,103 @@ def delete_game(game_id):
         flash(f"Error deleting game: {str(e)}", "danger")
 
     return redirect(url_for("main.games"))
+
+#player stats
+
+@main.route("/stats")
+def stats():
+    all_stats = db.session.query(PlayerStats)\
+        .join(Player, PlayerStats.player_id == Player.player_id)\
+        .join(Game, PlayerStats.game_id == Game.game_id)\
+        .order_by(Game.date.desc()).all()
+    return render_template("stats/list.html", stats=all_stats)
+
+
+@main.route("/stats/add", methods=["GET", "POST"])
+def add_stats():
+    players = Player.query.order_by(Player.name).all()
+    games   = Game.query.order_by(Game.date.desc()).all()
+
+    if request.method == "POST":
+        player_id              = request.form.get("player_id")
+        game_id                = request.form.get("game_id")
+        points                 = request.form.get("points", 0)
+        rebounds               = request.form.get("rebounds", 0)
+        assists                = request.form.get("assists", 0)
+        steals                 = request.form.get("steals", 0)
+        blocks                 = request.form.get("blocks", 0)
+        turnovers              = request.form.get("turnovers", 0)
+        minutes_played         = request.form.get("minutes_played", 0)
+        field_goals_attempted  = request.form.get("field_goals_attempted", 0)
+        field_goals_made       = request.form.get("field_goals_made", 0)
+        three_pointers_attempted = request.form.get("three_pointers_attempted", 0)
+        three_pointers_made    = request.form.get("three_pointers_made", 0)
+
+        if not player_id or not game_id:
+            flash("Player and game are required.", "danger")
+            return redirect(url_for("main.add_stats"))
+
+        # check for duplicate
+        existing = PlayerStats.query.filter_by(
+            player_id=player_id, game_id=game_id).first()
+        if existing:
+            flash("Stats for this player and game already exist.", "danger")
+            return redirect(url_for("main.add_stats"))
+
+        if int(field_goals_made) > int(field_goals_attempted):
+            flash("Field goals made cannot exceed field goals attempted.", "danger")
+            return redirect(url_for("main.add_stats"))
+
+        if int(three_pointers_made) > int(three_pointers_attempted):
+            flash("Three pointers made cannot exceed three pointers attempted.", "danger")
+            return redirect(url_for("main.add_stats"))
+
+        if int(minutes_played) > 48:
+            flash("Minutes played cannot exceed 48.", "danger")
+            return redirect(url_for("main.add_stats"))
+
+        try:
+            stat = PlayerStats(
+                player_id=int(player_id),
+                game_id=int(game_id),
+                points=int(points),
+                rebounds=int(rebounds),
+                assists=int(assists),
+                steals=int(steals),
+                blocks=int(blocks),
+                turnovers=int(turnovers),
+                minutes_played=int(minutes_played),
+                field_goals_attempted=int(field_goals_attempted),
+                field_goals_made=int(field_goals_made),
+                three_pointers_attempted=int(three_pointers_attempted),
+                three_pointers_made=int(three_pointers_made)
+            )
+
+            # validate non-negative
+            for field in [stat.points, stat.rebounds, stat.assists, stat.steals,
+                          stat.blocks, stat.turnovers, stat.minutes_played,
+                          stat.field_goals_attempted, stat.field_goals_made,
+                          stat.three_pointers_attempted, stat.three_pointers_made]:
+                if field < 0:
+                    raise ValueError("Stats cannot be negative.")
+
+            db.session.add(stat)
+            db.session.commit()
+            flash("Stats added!", "success")
+            return redirect(url_for("main.stats"))
+
+        except ValueError as e:
+            flash(f"Invalid input: {str(e)}", "danger")
+            return redirect(url_for("main.add_stats"))
+
+    return render_template("stats/add.html", players=players, games=games)
+
+
+@main.route("/stats/delete/<int:player_id>/<int:game_id>", methods=["POST"])
+def delete_stats(player_id, game_id):
+    stat = PlayerStats.query.filter_by(
+        player_id=player_id, game_id=game_id).first_or_404()
+    db.session.delete(stat)
+    db.session.commit()
+    flash("Stats deleted.", "success")
+    return redirect(url_for("main.stats"))
