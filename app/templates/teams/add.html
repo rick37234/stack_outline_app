@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% block title %}Add Team{% endblock %}
+{% block content %}
+<h1 class="h3 mb-4">Add Team</h1>
+
+{% with messages = get_flashed_messages(with_categories=true) %}
+  {% for category, message in messages %}
+    <div class="alert alert-{{ category }}">{{ message }}</div>
+  {% endfor %}
+{% endwith %}
+
+<form method="POST">
+  <div class="mb-3">
+    <label class="form-label">Name</label>
+    <input type="text" name="name" class="form-control" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Location</label>
+    <input type="text" name="location" class="form-control" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Conference</label>
+    <input type="text" name="conference" class="form-control" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">Coach</label>
+    <input type="text" name="coach" class="form-control" required>
+  </div>
+  <button type="submit" class="btn btn-primary">Add Team</button>
+  <a href="{{ url_for('main.teams') }}" class="btn btn-secondary">Cancel</a>
+</form>
+{% endblock %}

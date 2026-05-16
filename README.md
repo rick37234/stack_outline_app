@@ -49,3 +49,7 @@ stack_outline_app/
 - SQLite is used out of the box via `DATABASE_URL=sqlite:///app.db`.
 - To switch databases, set `DATABASE_URL` (for example, PostgreSQL/MySQL URI) and install the corresponding driver.
 - Tables are auto-created at startup for this minimal starter (`db.create_all()`).
+
+Original database already satisfied up to 3nf
+As for anomalies, unique constraint added to team name so that duplicate teams can not be added
+
