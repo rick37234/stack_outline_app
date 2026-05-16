@@ -4,22 +4,7 @@
 
 {% block content %}
 <section class="mb-4">
-  <h1 class="h3">Flask + SQLAlchemy + Jinja2 Starter</h1>
-  <p class="text-muted mb-0">
-    This page demonstrates a minimal HTML5/CSS3 frontend with Bootstrap and server-side rendering.
-  </p>
-</section>
-
-<section>
-  <h2 class="h5">Example Records</h2>
-  {% if records %}
-    <ul class="list-group">
-      {% for record in records %}
-        <li class="list-group-item">{{ record.title }}</li>
-      {% endfor %}
-    </ul>
-  {% else %}
-    <div class="alert alert-info mb-0">No records yet. Add some through the Flask shell or extend routes with a form/API.</div>
-  {% endif %}
+  <h1 class="h3">Basketball Stats App</h1>
+  <p class="text-muted">Track teams, players, games, and stats.</p>
 </section>
 {% endblock %}
